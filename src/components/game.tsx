@@ -4,7 +4,7 @@ import { elapsedSeconds, type BoardRow } from '../lib/leaderboard';
 import { supabase } from '../lib/supabase';
 import type { Game, Player, PlayerLocation } from '../lib/types';
 import type { LocationSharing } from '../hooks/useLocationSharing';
-import { Avatar, Button, Pill, Sheet, useNow } from './ui';
+import { Avatar, Button, Icons, Pill, Sheet, useNow } from './ui';
 
 /* ---------- Leaderboard ---------- */
 export function Leaderboard({ rows, highlightId, total, online }: { rows: BoardRow[]; highlightId?: string | null; total: number; online?: Set<string> }) {
@@ -15,9 +15,13 @@ export function Leaderboard({ rows, highlightId, total, online }: { rows: BoardR
     <ol className="space-y-2">
       {rows.map((r) => {
         const mine = r.id === highlightId;
+        const pct = total ? Math.round((Math.min(r.completed, total) / total) * 100) : 0;
         return (
-          <li key={r.id} className={`panel flex items-center gap-3 p-3 ${mine ? 'border-volt/60 bg-volt/[.06]' : ''}`}>
-            <span className={`display w-8 text-center text-xl font-bold ${r.rank === 1 ? 'text-flare' : 'text-mute'}`}>{r.rank}</span>
+          <li key={r.id} className={`panel relative overflow-hidden p-3 ${mine ? '!border-volt/60' : ''} ${r.rank === 1 ? 'glow-flare' : ''}`}>
+            <div className="flex items-center gap-3">
+            <span className={`display w-8 text-center font-bold ${r.rank <= 3 ? 'text-2xl' : 'text-xl text-mute'}`} aria-label={`Rank ${r.rank}`}>
+              {MEDALS[r.rank - 1] ?? r.rank}
+            </span>
             {r.kind === 'player'
               ? <Avatar emoji={r.avatar} size={40} online={online ? online.has(r.id) : undefined} />
               : <span className="h-10 w-10 shrink-0 rounded-xl grid place-items-center display font-bold text-base" style={{ background: r.color }}>{(r.name.replace(/^team\s+/i, '')[0] || '?').toUpperCase()}</span>}
@@ -32,11 +36,43 @@ export function Leaderboard({ rows, highlightId, total, online }: { rows: BoardR
                 {r.kind === 'team' && r.members.length > 0 && <span className="ml-1">{r.members.map((m) => m.avatar).join(' ')}</span>}
               </div>
             </div>
-            <span className="display text-xl font-bold tabular-nums">{r.points}</span>
+            <span className="text-right">
+              <span className="display block text-xl font-bold leading-none tabular-nums">{r.points}</span>
+              <span className="text-[10px] font-bold text-mute">PTS</span>
+            </span>
+            </div>
+            <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-line" aria-hidden>
+              <div className={`h-full rounded-full transition-all duration-700 ${r.finishedAt ? 'bg-ok' : 'bg-gradient-to-r from-volt to-voltsoft'}`} style={{ width: `${pct}%` }} />
+            </div>
           </li>
         );
       })}
     </ol>
+  );
+}
+
+const MEDALS = ['🥇', '🥈', '🥉'];
+
+/* ---------- Invite friends (share sheet on phones, copy link elsewhere) ---------- */
+export function InviteButton({ code, name, className = '' }: { code: string; name: string; className?: string }) {
+  const [copied, setCopied] = useState(false);
+  const url = `${window.location.origin}/?code=${code}`;
+  const invite = async () => {
+    const text = `Join my City Manhunt game “${name}”! Code: ${code}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'City Manhunt', text, url }); } catch { /* share sheet dismissed */ }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard blocked */ }
+  };
+  return (
+    <Button variant="ghost" className={className} onClick={invite}>
+      <span className="h-4 w-4">{Icons.people}</span>{copied ? 'Invite link copied!' : 'Invite friends'}
+    </Button>
   );
 }
 
@@ -229,8 +265,10 @@ export function MissionComplete({ game, rows, myRowId, total, finishedAt, comple
   const winnerFinal = gameEnded || allDone;
   return (
     <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-3xl border border-flare/40 bg-gradient-to-b from-flare/15 to-transparent p-6 text-center">
-        <p className="display text-[13px] font-bold text-flare">{finishedAt ? 'Final destination reached' : 'Game over'}</p>
+      <div className="glow-flare relative overflow-hidden rounded-3xl border border-flare/40 bg-gradient-to-b from-flare/15 to-transparent p-6 text-center">
+        <Confetti />
+        <div className="text-5xl" aria-hidden>🏁</div>
+        <p className="display mt-2 text-[13px] font-bold text-flare">{finishedAt ? 'Final destination reached' : 'Game over'}</p>
         <h2 className="display mt-2 text-4xl font-bold leading-[1.05]">MISSION COMPLETE!</h2>
         <p className="mt-2 font-semibold text-mute">YOU HAVE REACHED THE FINAL DESTINATION.</p>
         <div className="mt-6 grid grid-cols-3 gap-2">
@@ -257,6 +295,22 @@ export function MissionComplete({ game, rows, myRowId, total, finishedAt, comple
   );
 }
 
+const CONFETTI_COLORS = ['#2E8BFF', '#9CC8FF', '#FF8A1F', '#35D69B', '#E9EDF6'];
+function Confetti() {
+  return (
+    <div className="confetti" aria-hidden>
+      {Array.from({ length: 28 }).map((_, i) => (
+        <i key={i} style={{
+          left: `${(i * 37) % 100}%`,
+          background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+          animationDelay: `${(i % 9) * 0.33}s`,
+          animationDuration: `${2.6 + (i % 5) * 0.4}s`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-base/60 border border-line p-3">
@@ -276,7 +330,7 @@ export function Progress({ total, current, finished }: { total: number; current:
       </div>
       <div className="mt-2 flex gap-1.5" aria-hidden>
         {Array.from({ length: total }).map((_, i) => (
-          <span key={i} className={`h-2 flex-1 rounded-full ${i < current ? 'bg-volt' : i === current && !finished ? 'bg-flare' : 'bg-line'}`} />
+          <span key={i} className={`h-2 flex-1 rounded-full transition-colors ${i < current ? 'bg-volt shadow-[0_0_10px_rgba(46,139,255,.7)]' : i === current && !finished ? 'bg-flare animate-pulse' : 'bg-line'}`} />
         ))}
       </div>
     </div>

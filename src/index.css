@@ -24,12 +24,24 @@ body::before {
   background-size: 28px 28px;
   mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
 }
+/* Ambient glows: blue from the top, orange from the bottom corner */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(60% 40% at 50% -5%, rgba(46,139,255,.22), transparent 70%),
+    radial-gradient(45% 30% at 105% 100%, rgba(255,138,31,.12), transparent 70%);
+}
 #root { position: relative; z-index: 1; }
 
 input, textarea, select { font-size: 16px; } /* stops iOS zoom-on-focus */
 
 @layer components {
-  .panel { @apply bg-deck border border-line rounded-xl2; }
+  .panel {
+    @apply border border-line rounded-xl2;
+    background: linear-gradient(180deg, rgba(29,34,48,.92), rgba(22,26,36,.92));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 30px -18px rgba(0,0,0,.8);
+  }
   .panel-raised { @apply bg-deck2 border border-line rounded-2xl; }
   .field {
     @apply w-full bg-base border border-line rounded-xl px-3.5 py-3 text-ink placeholder:text-mute/70
@@ -43,6 +55,58 @@ input, textarea, select { font-size: 16px; } /* stops iOS zoom-on-focus */
   .btn:focus-visible { @apply outline-none ring-2 ring-voltsoft ring-offset-2 ring-offset-base; }
   .tab-active { @apply text-ink; }
   .display { @apply font-display tracking-wide; }
+  .kicker { @apply font-display text-[11px] font-bold uppercase tracking-[.22em]; }
+}
+
+/* ---------- Showpiece effects ---------- */
+.text-shine {
+  background: linear-gradient(100deg, #E9EDF6 20%, #9CC8FF 40%, #FFFFFF 50%, #9CC8FF 60%, #E9EDF6 80%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shine 6s ease-in-out infinite;
+}
+@keyframes shine { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+
+.route-flow { animation: flow 1.4s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -22; } }
+.node-pop { transform-box: fill-box; transform-origin: center; animation: nodePop 2.8s ease-in-out infinite; }
+@keyframes nodePop { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.35); } }
+
+.radar {
+  position: absolute; border-radius: 999px; pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0 84%, rgba(46,139,255,.35) 99%, transparent 100%);
+  animation: sweep 4s linear infinite;
+  mask-image: radial-gradient(circle, #000 55%, transparent 71%);
+}
+.radar-rings {
+  position: absolute; border-radius: 999px; pointer-events: none;
+  background: repeating-radial-gradient(circle, transparent 0 34px, rgba(46,139,255,.13) 35px 36px);
+  mask-image: radial-gradient(circle, #000 40%, transparent 70%);
+}
+
+.glow-volt { box-shadow: 0 0 0 1px rgba(46,139,255,.35), 0 18px 50px -20px rgba(46,139,255,.7); }
+.glow-flare { box-shadow: 0 0 0 1px rgba(255,138,31,.35), 0 18px 50px -20px rgba(255,138,31,.7); }
+
+.btn-sheen { position: relative; overflow: hidden; }
+.btn-sheen::after {
+  content: ''; position: absolute; inset: 0; transform: translateX(-120%);
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%);
+  animation: sheen 3.6s ease-in-out infinite;
+}
+@keyframes sheen { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+
+.rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.confetti i {
+  position: absolute; top: -12px; width: 7px; height: 12px; border-radius: 2px; opacity: 0;
+  animation: fall 3.2s cubic-bezier(.3,.6,.5,1) infinite;
+}
+@keyframes fall {
+  0% { opacity: 0; transform: translateY(0) rotate(0); }
+  10% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(340px) rotate(540deg); }
 }
 
 .safe-top { padding-top: max(var(--safe-top), 12px); }
@@ -107,6 +171,8 @@ input, textarea, select { font-size: 16px; } /* stops iOS zoom-on-focus */
 @keyframes ping { 75%, 100% { transform: scale(1.8); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .unlock-ring, .live-dot::after, .pm.help .pm-av { animation: none; }
+  .unlock-ring, .live-dot::after, .pm.help .pm-av, .text-shine, .route-flow, .node-pop,
+  .radar, .btn-sheen::after, .confetti i { animation: none; }
+  .rise { animation-duration: .01s; }
   .unlock-in, .sheet-in { animation-duration: .01s; }
 }

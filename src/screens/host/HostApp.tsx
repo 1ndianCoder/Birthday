@@ -106,10 +106,10 @@ function ControlTab({ data, game, now }: { data: GameData; game: Game; now: numb
 
   return (
     <div className="space-y-4">
-      <section className="panel p-5">
+      <section className="panel glow-volt p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[13px] font-bold text-mute">Game code</div>
+            <div className="kicker text-voltsoft">Game code</div>
             <div className="display text-4xl font-bold tracking-[.22em]">{game.code}</div>
           </div>
           <Button size="sm" variant="ghost" onClick={invite}>Invite</Button>
@@ -128,7 +128,7 @@ function ControlTab({ data, game, now }: { data: GameData; game: Game; now: numb
             <Check ok={competitors.length > 0} text={competitors.length ? `${competitors.length} player${competitors.length > 1 ? 's' : ''} joined` : 'No players have joined yet'} />
             {game.mode === 'team' && <Check ok={unassigned === 0} text={unassigned ? `${unassigned} player${unassigned > 1 ? 's' : ''} without a team (Players tab)` : 'Everyone is in a team'} />}
             <Check ok={game.emergency_contacts.length > 0} text={game.emergency_contacts.length ? 'Emergency contacts added' : 'Add emergency contacts (Settings tab)'} />
-            <Button size="lg" className="w-full" loading={busy === 'active'} onClick={() => setStatus('active', 'The hunt has started!')}>Start the hunt</Button>
+            <Button size="lg" className="btn-sheen w-full" loading={busy === 'active'} onClick={() => setStatus('active', 'The hunt has started!')}>Start the hunt</Button>
           </>
         )}
         {game.status === 'active' && (

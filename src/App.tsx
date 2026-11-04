@@ -7,6 +7,7 @@ import { PlayerApp } from './screens/PlayerApp';
 import { HostApp } from './screens/host/HostApp';
 import { SetupScreen } from './screens/SetupScreen';
 import { Button, useToast } from './components/ui';
+import { Logo } from './components/Logo';
 
 const GAME_KEY = 'manhunt-game';
 
@@ -78,7 +79,10 @@ function GameShell({ gameId, meId, onLeave }: { gameId: string; meId: string; on
 function Splash() {
   return (
     <Centered>
-      <div className="relative h-24 w-24"><div className="unlock-ring !h-24 !w-24" /></div>
+      <div className="relative grid h-28 w-28 place-items-center">
+        <div className="unlock-ring !h-28 !w-28" />
+        <Logo size={44} />
+      </div>
       <p className="display mt-6 text-mute">Connecting to mission control…</p>
     </Centered>
   );

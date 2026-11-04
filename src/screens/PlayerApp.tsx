@@ -6,7 +6,7 @@ import { time } from '../lib/format';
 import { errMsg, rpc } from '../lib/supabase';
 import type { ArrivalResult, ClueView, Game, Player, PlayerView } from '../lib/types';
 import { MapView, type Waypoint } from '../components/MapView';
-import { ConsentSheet, Leaderboard, LocationControl, MissionComplete, Progress, SafetyPanel, UnlockOverlay } from '../components/game';
+import { ConsentSheet, InviteButton, Leaderboard, LocationControl, MissionComplete, Progress, SafetyPanel, UnlockOverlay } from '../components/game';
 import { Avatar, Button, Icons, Pill, TabBar, useNow, useToast } from '../components/ui';
 import { GameHeader } from './GameHeader';
 
@@ -216,11 +216,13 @@ function CurrentClue({ clue, game, onReload, checkIn, sharingOn, onRequestShare 
   };
 
   return (
-    <article className="relative overflow-hidden rounded-3xl border border-volt/40 bg-deck">
+    <article className="glow-volt relative overflow-hidden rounded-3xl border border-volt/40 bg-deck">
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-volt via-voltsoft to-flare" />
-      <div className="p-5">
+      <div className="radar-rings -right-24 -top-24 h-64 w-64 opacity-70" aria-hidden />
+      <div className="radar -right-24 -top-24 h-64 w-64 opacity-70" aria-hidden />
+      <div className="relative p-5">
         <div className="flex items-center justify-between">
-          <Pill tone="volt">Clue {clue.index + 1}</Pill>
+          <Pill tone="volt" live>Clue {clue.index + 1}</Pill>
           <span className="text-[13px] font-bold text-mute">+{clue.points} pts</span>
         </div>
         <h2 className="display mt-3 text-[28px] font-bold leading-tight">{clue.title}</h2>
@@ -237,7 +239,7 @@ function CurrentClue({ clue, game, onReload, checkIn, sharingOn, onRequestShare 
       </div>
 
       <div className="border-t border-line bg-deck2/60 p-4 space-y-3">
-        <Button size="lg" className="w-full" onClick={doCheck} loading={checking} disabled={paused}>I’m here — check in</Button>
+        <Button size="lg" className="btn-sheen w-full" onClick={doCheck} loading={checking} disabled={paused}>I’m here — check in</Button>
         {result && <p className="text-center text-[14px] font-semibold text-voltsoft" aria-live="polite">{result}</p>}
         <div className="flex gap-2">
           {clue.has_hint && !clue.hint_used && (
@@ -258,10 +260,16 @@ function Lobby({ game, me, data }: { game: Game; me: Player; data: GameData }) {
   const host = data.players.find((p) => p.is_host);
   return (
     <div className="space-y-4">
-      <div className="panel p-5 text-center">
-        <p className="text-[13px] font-bold text-mute">Waiting for the host to start</p>
-        <p className="display mt-2 text-4xl font-bold tracking-[.25em]">{game.code}</p>
-        <p className="mt-2 text-[13px] text-mute">{game.mode === 'team' ? 'Team mode: you’ll share progress with your team.' : 'Individual mode: everyone races for themselves.'}</p>
+      <div className="panel glow-volt relative overflow-hidden p-5 text-center">
+        <div className="radar-rings -left-16 -top-20 h-72 w-72" aria-hidden />
+        <div className="radar -left-16 -top-20 h-72 w-72" aria-hidden />
+        <div className="relative">
+          <p className="kicker text-voltsoft">Standing by</p>
+          <p className="mt-1 text-[14px] font-semibold text-mute">Waiting for the host to start the hunt</p>
+          <p className="display mt-3 text-5xl font-bold tracking-[.25em]">{game.code}</p>
+          <p className="mt-2 text-[13px] text-mute">{game.mode === 'team' ? 'Team mode: you’ll share progress with your team.' : 'Individual mode: everyone races for themselves.'}</p>
+          <InviteButton code={game.code} name={game.name} className="mt-4 w-full" />
+        </div>
       </div>
       <section>
         <h3 className="mb-2 font-bold">Players ({players.length})</h3>
