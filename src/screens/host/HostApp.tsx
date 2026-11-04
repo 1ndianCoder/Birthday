@@ -30,7 +30,7 @@ export function HostApp({ data, me, onLeave }: { data: GameData; me: Player; onL
       if (s.lat == null || s.lng == null) return;
       const last = i === data.stages.length - 1;
       w.push({ id: s.id, lat: s.lat, lng: s.lng, label: `${i + 1}. ${s.destination_name}${s.confirmed ? '' : ' (not confirmed)'}`,
-        kind: last ? 'finish' : s.confirmed ? 'host-ok' : 'host', text: last ? '🕹' : String(i + 1), radius: s.radius_m });
+        kind: last ? 'finish' : s.confirmed ? 'host-ok' : 'host', text: last ? '🏁' : String(i + 1), radius: s.radius_m });
     });
     return w;
   }, [game.start_lat, game.start_lng, game.start_name, data.stages]);

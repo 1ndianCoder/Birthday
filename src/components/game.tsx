@@ -76,7 +76,7 @@ export function InviteButton({ code, name, className = '' }: { code: string; nam
   );
 }
 
-/* ---------- Arcade countdown ---------- */
+/* ---------- Finish-line party countdown ---------- */
 export function ArcadeTimer({ game, isHost }: { game: Game; isHost: boolean }) {
   const now = useNow(500);
   const ends = game.arcade_ends_at ? new Date(game.arcade_ends_at).getTime() : null;
@@ -85,14 +85,14 @@ export function ArcadeTimer({ game, isHost }: { game: Game; isHost: boolean }) {
   return (
     <div className="panel-raised p-4">
       <div className="flex items-center justify-between">
-        <span className="font-bold">Arcade time</span>
+        <span className="font-bold">Party timer</span>
         {left !== null && left <= 0 && <Pill tone="flare">Time’s up</Pill>}
       </div>
       <div className={`display mt-1 text-5xl font-bold tabular-nums ${left !== null && left < 300 ? 'text-flare' : ''}`}>
         {left === null ? '60:00' : clock(left)}
       </div>
       <p className="mt-1 text-[13px] text-mute">
-        {left === null ? 'The host starts this when everyone reaches the arcade.' : left > 0 ? 'Then it’s back to the house for birthday dinner.' : 'Head back together for birthday dinner.'}
+        {left === null ? 'The host can start a countdown when everyone reaches the finish line.' : left > 0 ? 'Enjoy the finish line! Stay together.' : 'Time’s up! Head home together for the birthday.'}
       </p>
       {isHost && (
         <div className="mt-3 flex flex-wrap gap-2">

@@ -39,7 +39,7 @@ export function RouteEditor({ game, stages, onChanged }: { game: Game; stages: S
       <div>
         <h2 className="display text-2xl font-bold">Route</h2>
         <p className="mt-1 text-[14px] text-mute">
-          Players see one clue at a time. Each destination unlocks the next. The last destination is the final arcade.
+          Players see one clue at a time. Each destination unlocks the next. The last destination is the finish line.
           Check every pin yourself and tick “confirmed” before the game can start.
         </p>
         {running && <p className="mt-2 rounded-xl border border-flare/40 bg-flare/10 p-3 text-[13px] text-flare">The game is running. Changing the order now can confuse players who are mid-clue.</p>}

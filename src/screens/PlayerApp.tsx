@@ -63,7 +63,7 @@ export function PlayerApp({ data, me, onLeave }: { data: GameData; me: Player; o
     [game, data.players, data.teams, data.scores, data.arrivals]);
   const myRowId = game.mode === 'team' ? me.team_id : me.id;
 
-  // Waypoints players are allowed to see: start, discovered destinations, and (optionally) the arcade.
+  // Waypoints players are allowed to see: start, discovered destinations, and (optionally) the finish.
   const waypoints = useMemo<Waypoint[]>(() => {
     const w: Waypoint[] = [];
     if (game.start_lat && game.start_lng) w.push({ id: 'start', lat: game.start_lat, lng: game.start_lng, label: `Start: ${game.start_name}`, kind: 'start', text: 'S' });
@@ -71,7 +71,7 @@ export function PlayerApp({ data, me, onLeave }: { data: GameData; me: Player; o
       w.push({ id: c.id, lat: c.lat!, lng: c.lng!, label: `${c.index + 1}. ${c.destination_name}`, kind: 'done', text: String(c.index + 1) });
     });
     if (view?.finish && !w.some((x) => x.lat === view.finish!.lat && x.lng === view.finish!.lng)) {
-      w.push({ id: 'finish', lat: view.finish.lat, lng: view.finish.lng, label: `Final: ${view.finish.name}`, kind: 'finish', text: '🕹' });
+      w.push({ id: 'finish', lat: view.finish.lat, lng: view.finish.lng, label: `Final: ${view.finish.name}`, kind: 'finish', text: '🏁' });
     }
     return w;
   }, [game.start_lat, game.start_lng, game.start_name, view]);

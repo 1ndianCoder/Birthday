@@ -107,7 +107,7 @@ export function Settings({ game, teams, onExit }: { game: Game; teams: Team[]; o
         )}
         <label className="flex items-start gap-3">
           <input type="checkbox" className="mt-1 h-5 w-5 accent-[#2E8BFF]" checked={g.reveal_finish} onChange={(e) => setG({ ...g, reveal_finish: e.target.checked })} />
-          <span className="text-[14px]">Show the final arcade on everyone’s map from the start. Other destinations stay hidden until they’re found.</span>
+          <span className="text-[14px]">Show the finish line on everyone’s map from the start. Other destinations stay hidden until they’re found.</span>
         </label>
       </section>
 

@@ -42,11 +42,15 @@ export function MapView({ players, teams = [], locations, meId, waypoints, now, 
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = L.map(el.current, { zoomControl: true, attributionControl: true }).setView(SYDNEY, 14);
-    // CARTO "Dark Matter" basemap, built on OpenStreetMap data.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 20, subdomains: 'abcd',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    // Esri "Dark Gray Canvas" basemap plus its street-name layer; no API key needed.
+    // (CARTO's dark tiles now require a key.) Native tiles stop at z16, so deeper zooms upscale.
+    const esri = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas';
+    const tileOpts = { maxZoom: 19, maxNativeZoom: 16 };
+    L.tileLayer(`${esri}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`, {
+      ...tileOpts,
+      attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a>, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(m);
+    L.tileLayer(`${esri}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, tileOpts).addTo(m);
     wpLayer.current = L.layerGroup().addTo(m);
     playerLayer.current = L.layerGroup().addTo(m);
     pickLayer.current = L.layerGroup().addTo(m);

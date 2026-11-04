@@ -81,13 +81,13 @@ export function Landing({ onEnter }: { onEnter: (gameId: string) => void }) {
       <section className="panel rise relative overflow-hidden p-4" style={{ animationDelay: '.2s' }} aria-label="The route">
         <div className="flex items-center justify-between">
           <span className="kicker text-mute">The route</span>
-          <span className="rounded-full bg-volt/15 px-2.5 py-0.5 text-[11px] font-bold text-voltsoft">6 secret stops</span>
+          <span className="rounded-full bg-volt/15 px-2.5 py-0.5 text-[11px] font-bold text-voltsoft">4 secret stops</span>
         </div>
         <RouteArt />
         <div className="mt-1 grid grid-cols-3 gap-2 text-center">
-          <Stat value="6" label="Clues" />
+          <Stat value="4" label="Clues" />
           <Stat value="+100" label="Per find" />
-          <Stat value="🕹" label="Arcade finale" />
+          <Stat value="🏁" label="Mystery finish" />
         </div>
         <div className="mt-3 flex items-center justify-between text-[12px]">
           <span className="text-mute"><b className="text-ink">Start:</b> Victoria Cross Metro</span>
@@ -190,14 +190,14 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-/** A stylised, spoiler-free sketch of the route: start, five hidden stops, the finish. */
+/** A stylised, spoiler-free sketch of the route: start, three hidden stops, the finish. */
 function RouteArt() {
-  const nodes: [number, number][] = [[14, 70], [62, 34], [112, 58], [160, 26], [210, 62], [258, 30]];
+  const nodes: [number, number][] = [[14, 70], [84, 30], [156, 62], [228, 28]];
   return (
     <svg viewBox="0 0 320 96" className="mt-2 w-full" aria-hidden>
-      <path d="M14 70 C 34 70, 40 34, 62 34 S 92 58, 112 58 S 140 26, 160 26 S 190 62, 210 62 S 238 30, 258 30 S 290 44, 302 44"
+      <path d="M14 70 C 44 70, 54 30, 84 30 S 126 62, 156 62 S 198 28, 228 28 S 284 44, 302 44"
         fill="none" stroke="#2A3142" strokeWidth="6" strokeLinecap="round" />
-      <path className="route-flow" d="M14 70 C 34 70, 40 34, 62 34 S 92 58, 112 58 S 140 26, 160 26 S 190 62, 210 62 S 238 30, 258 30 S 290 44, 302 44"
+      <path className="route-flow" d="M14 70 C 44 70, 54 30, 84 30 S 126 62, 156 62 S 198 28, 228 28 S 284 44, 302 44"
         fill="none" stroke="#2E8BFF" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="6 5" />
       {nodes.map(([x, y], i) => (
         <g key={i} className="node-pop" style={{ animationDelay: `${i * 0.35}s` }}>
