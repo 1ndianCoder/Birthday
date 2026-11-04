@@ -191,13 +191,16 @@ function CurrentClue({ clue, game, onReload, checkIn, sharingOn, onRequestShare 
   clue: ClueView; game: Game; onReload: () => void; checkIn: () => Promise<ArrivalResult>; sharingOn: boolean; onRequestShare: () => void;
 }) {
   const [hintBusy, setHintBusy] = useState(false);
+  const [hintArmed, setHintArmed] = useState(false);
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const toast = useToast();
   const paused = game.status !== 'active';
 
   const takeHint = async () => {
-    if (!confirm(`Use the hint? It costs ${game.hint_penalty} points.`)) return;
+    // First tap arms the hint, second tap spends the points.
+    if (!hintArmed) { setHintArmed(true); return; }
+    setHintArmed(false);
     setHintBusy(true);
     try { await rpc('use_hint', { p_game: game.id }); onReload(); } catch (e) { toast(errMsg(e), 'bad'); } finally { setHintBusy(false); }
   };
@@ -229,7 +232,7 @@ function CurrentClue({ clue, game, onReload, checkIn, sharingOn, onRequestShare 
         </div>
         <h2 className="display mt-3 text-[28px] font-bold leading-tight">{clue.title}</h2>
         {clue.image_url && <img src={clue.image_url} alt="" className="mt-4 w-full rounded-2xl border border-line object-cover max-h-64" />}
-        <p className="mt-4 whitespace-pre-line text-[17px] leading-[1.6]">{clue.riddle}</p>
+        <Riddle text={clue.riddle} />
 
         {clue.hint_used && clue.hint && (
           <div className="mt-4 rounded-2xl border border-flare/40 bg-flare/10 p-3.5">
@@ -245,7 +248,7 @@ function CurrentClue({ clue, game, onReload, checkIn, sharingOn, onRequestShare 
         {result && <p className="text-center text-[14px] font-semibold text-voltsoft" aria-live="polite">{result}</p>}
         <div className="flex gap-2">
           {clue.has_hint && !clue.hint_used && (
-            <Button variant="ghost" size="sm" className="flex-1" onClick={takeHint} loading={hintBusy} disabled={paused}>Hint (−{game.hint_penalty})</Button>
+            <Button variant="ghost" size="sm" className="flex-1" onClick={takeHint} loading={hintBusy} disabled={paused}>{hintArmed ? `Tap again: −${game.hint_penalty} pts` : `Hint (−${game.hint_penalty})`}</Button>
           )}
           {!sharingOn && <Button variant="ghost" size="sm" className="flex-1" onClick={onRequestShare}>Auto check-in</Button>}
         </div>
@@ -254,6 +257,31 @@ function CurrentClue({ clue, game, onReload, checkIn, sharingOn, onRequestShare 
         </p>
       </div>
     </article>
+  );
+}
+
+/** Riddles starting with 🔐 are secret-code clues: the last paragraph is the coded message. */
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+function Riddle({ text }: { text: string }) {
+  const paras = text.split(/\n\s*\n/);
+  if (!text.startsWith('🔐') || paras.length < 2) {
+    return <p className="mt-4 whitespace-pre-line text-[17px] leading-[1.6]">{text}</p>;
+  }
+  const code = paras[paras.length - 1].trim();
+  return (
+    <div className="mt-4">
+      <p className="whitespace-pre-line text-[16px] leading-[1.6]">{paras.slice(0, -1).join('\n\n')}</p>
+      <div className="mt-4 rounded-2xl border border-flare/40 bg-flare/10 p-4">
+        <div className="kicker text-flare">Secret message</div>
+        <p className="display mt-2 break-words text-[24px] font-bold leading-snug tracking-[.06em] text-ink">{code}</p>
+      </div>
+      <div className="mt-3 grid grid-cols-13 gap-1" aria-label="Alphabet helper">
+        {ALPHABET.map((l) => (
+          <span key={l} className="display grid h-7 place-items-center rounded-md bg-base/70 text-[13px] font-bold text-voltsoft">{l}</span>
+        ))}
+      </div>
+      <p className="mt-1.5 text-center text-[11px] text-mute">Find each letter, then use the one before it.</p>
+    </div>
   );
 }
 

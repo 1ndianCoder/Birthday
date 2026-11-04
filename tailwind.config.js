@@ -21,6 +21,7 @@ export default {
         body: ['"Manrope"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       borderRadius: { xl2: '1.25rem' },
+      gridTemplateColumns: { 13: 'repeat(13, minmax(0, 1fr))' },
     },
   },
   plugins: [],
