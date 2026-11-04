@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body, #root { height: 100%; }
+body {
+  @apply bg-base text-ink font-body antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+/* A faint survey grid — the "mission control" surface */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(46,139,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46,139,255,.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+}
+#root { position: relative; z-index: 1; }
+
+input, textarea, select { font-size: 16px; } /* stops iOS zoom-on-focus */
+
+@layer components {
+  .panel { @apply bg-deck border border-line rounded-xl2; }
+  .panel-raised { @apply bg-deck2 border border-line rounded-2xl; }
+  .field {
+    @apply w-full bg-base border border-line rounded-xl px-3.5 py-3 text-ink placeholder:text-mute/70
+           outline-none focus:border-volt focus:ring-2 focus:ring-volt/30 transition;
+  }
+  .label { @apply block text-[13px] font-semibold text-mute mb-1.5; }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-bold transition
+           active:scale-[.98] disabled:opacity-45 disabled:pointer-events-none select-none;
+  }
+  .btn:focus-visible { @apply outline-none ring-2 ring-voltsoft ring-offset-2 ring-offset-base; }
+  .tab-active { @apply text-ink; }
+  .display { @apply font-display tracking-wide; }
+}
+
+.safe-top { padding-top: max(var(--safe-top), 12px); }
+.safe-bottom { padding-bottom: max(var(--safe-bottom), 10px); }
+
+/* ---------- Leaflet in the dark ---------- */
+.leaflet-container { background: #0c0f16; font-family: 'Manrope', system-ui, sans-serif; }
+.leaflet-control-attribution { background: rgba(16,19,27,.8) !important; color: #8C94A9 !important; font-size: 10px; }
+.leaflet-control-attribution a { color: #9CC8FF !important; }
+.leaflet-control-zoom a { background: #1D2230 !important; color: #E9EDF6 !important; border-color: #2A3142 !important; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #1D2230; color: #E9EDF6; border: 1px solid #2A3142; }
+.leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
+
+.pm { display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); width: max-content; }
+.pm-av {
+  width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center; font-size: 21px;
+  background: #1D2230; border: 3px solid var(--ring, #2E8BFF);
+  box-shadow: 0 0 0 4px rgba(46,139,255,.18), 0 6px 14px rgba(0,0,0,.5);
+}
+.pm.me .pm-av { box-shadow: 0 0 0 6px rgba(255,138,31,.28), 0 6px 14px rgba(0,0,0,.5); }
+.pm-name {
+  margin-top: 3px; padding: 1px 7px; border-radius: 6px; font: 700 11px/1.5 'Manrope', sans-serif;
+  background: rgba(16,19,27,.9); color: #E9EDF6; border: 1px solid #2A3142; white-space: nowrap;
+}
+.pm.stale .pm-av { filter: grayscale(1); opacity: .6; border-style: dashed; }
+.pm.stale .pm-name { color: #8C94A9; }
+.pm.help .pm-av { border-color: #FF4D61; animation: helpPulse 1.2s infinite; }
+@keyframes helpPulse { 50% { box-shadow: 0 0 0 10px rgba(255,77,97,.25); } }
+
+.wp {
+  transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  font: 700 13px 'Chakra Petch', sans-serif; color: #10131B; box-shadow: 0 4px 12px rgba(0,0,0,.5);
+}
+.wp.start { background: #E9EDF6; }
+.wp.done { background: #2E8BFF; color: #fff; }
+.wp.finish { background: #FF8A1F; width: 36px; height: 36px; font-size: 18px; border-radius: 11px; }
+.wp.host { background: #1D2230; color: #E9EDF6; border: 2px solid #8C94A9; }
+.wp.host.ok { border-color: #35D69B; }
+.wp.pick { background: #FF8A1F; border-radius: 999px; }
+
+/* ---------- Unlock moment: the one big animation ---------- */
+.unlock-ring {
+  position: absolute; inset: 0; margin: auto; width: 260px; height: 260px; border-radius: 999px;
+  border: 1px solid rgba(46,139,255,.35);
+  background: conic-gradient(from 0deg, rgba(46,139,255,.0), rgba(46,139,255,.45) 12%, rgba(46,139,255,0) 13%);
+  animation: sweep 1.6s linear infinite;
+}
+.unlock-ring::after {
+  content: ''; position: absolute; inset: 40px; border-radius: 999px; border: 1px dashed rgba(156,200,255,.25);
+}
+@keyframes sweep { to { transform: rotate(360deg); } }
+.unlock-in { animation: unlockIn .5s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes unlockIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+.sheet-in { animation: sheetIn .28s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes sheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.live-dot { position: relative; }
+.live-dot::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 999px; border: 2px solid currentColor;
+  animation: ping 1.8s cubic-bezier(0,0,.2,1) infinite;
+}
+@keyframes ping { 75%, 100% { transform: scale(1.8); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .unlock-ring, .live-dot::after, .pm.help .pm-av { animation: none; }
+  .unlock-in, .sheet-in { animation-duration: .01s; }
+}
