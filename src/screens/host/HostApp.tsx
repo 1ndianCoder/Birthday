@@ -6,7 +6,7 @@ import { buildLeaderboard, elapsedSeconds } from '../../lib/leaderboard';
 import { errMsg, rpc, supabase } from '../../lib/supabase';
 import type { Game, Player, Stage, Team } from '../../lib/types';
 import { MapView, type Waypoint } from '../../components/MapView';
-import { ArcadeTimer, ConsentSheet, Leaderboard, LocationControl } from '../../components/game';
+import { ArcadeTimer, ConsentSheet, ExitSheet, Leaderboard, LocationControl } from '../../components/game';
 import { Avatar, Button, Icons, Pill, TabBar, useNow, useToast } from '../../components/ui';
 import { GameHeader } from '../GameHeader';
 import { RouteEditor } from './RouteEditor';
@@ -18,6 +18,7 @@ export function HostApp({ data, me, onLeave }: { data: GameData; me: Player; onL
   const game = data.game!;
   const [tab, setTab] = useState<Tab>('control');
   const [consentOpen, setConsentOpen] = useState(false);
+  const [exitOpen, setExitOpen] = useState(false);
   const sharing = useLocationSharing({ game, me, autoCheck: false });
   const now = useNow(1000);
   const helpCount = data.players.filter((p) => p.needs_help).length;
@@ -38,7 +39,7 @@ export function HostApp({ data, me, onLeave }: { data: GameData; me: Player; onL
 
   return (
     <div className="min-h-full pb-28">
-      <GameHeader game={game} me={me} team={null} connected={data.connected} sharingOn={me.sharing_location} />
+      <GameHeader game={game} me={me} team={null} connected={data.connected} sharingOn={me.sharing_location} onExit={() => setExitOpen(true)} />
       {helpCount > 0 && (
         <button onClick={() => setTab('players')} className="block w-full bg-bad/90 px-4 py-2.5 text-center text-[14px] font-bold text-white">
           {helpCount} player{helpCount > 1 ? 's need' : ' needs'} help. Tap to see who.
@@ -56,7 +57,7 @@ export function HostApp({ data, me, onLeave }: { data: GameData; me: Player; onL
             <PlayerStatusList data={data} game={game} now={now} compact />
           </div>
         )}
-        {tab === 'settings' && <Settings game={game} teams={data.teams} onLeave={onLeave} />}
+        {tab === 'settings' && <Settings game={game} teams={data.teams} onExit={() => setExitOpen(true)} />}
       </main>
       <TabBar<Tab> value={tab} onChange={setTab} tabs={[
         { id: 'control', label: 'Control', icon: Icons.control },
@@ -66,6 +67,7 @@ export function HostApp({ data, me, onLeave }: { data: GameData; me: Player; onL
         { id: 'settings', label: 'Settings', icon: Icons.gear },
       ]} />
       <ConsentSheet open={consentOpen} onClose={() => setConsentOpen(false)} onAccept={() => { setConsentOpen(false); sharing.enable(); }} />
+      <ExitSheet open={exitOpen} onClose={() => setExitOpen(false)} game={game} me={me} onLeave={onLeave} />
     </div>
   );
 }

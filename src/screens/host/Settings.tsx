@@ -4,7 +4,7 @@ import type { EmergencyContact, Game, Team } from '../../lib/types';
 import { MapView } from '../../components/MapView';
 import { Button, useNow, useToast } from '../../components/ui';
 
-export function Settings({ game, teams, onLeave }: { game: Game; teams: Team[]; onLeave: () => void }) {
+export function Settings({ game, teams, onExit }: { game: Game; teams: Team[]; onExit: () => void }) {
   const toast = useToast();
   const now = useNow(10000);
   const [g, setG] = useState(game);
@@ -112,9 +112,7 @@ export function Settings({ game, teams, onLeave }: { game: Game; teams: Team[]; 
       </section>
 
       <Button size="lg" className="w-full" loading={busy} onClick={save}>Save settings</Button>
-      <Button variant="quiet" className="w-full" onClick={() => { if (confirm('Leave this game on this phone? You can rejoin with the code, but host controls stay with this browser’s account.')) onLeave(); }}>
-        Leave game on this phone
-      </Button>
+      <Button variant="danger" className="w-full" onClick={onExit}>End, delete or leave game</Button>
     </div>
   );
 }

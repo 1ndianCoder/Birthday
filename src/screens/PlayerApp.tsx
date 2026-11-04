@@ -6,7 +6,7 @@ import { time } from '../lib/format';
 import { errMsg, rpc } from '../lib/supabase';
 import type { ArrivalResult, ClueView, Game, Player, PlayerView } from '../lib/types';
 import { MapView, type Waypoint } from '../components/MapView';
-import { ConsentSheet, InviteButton, Leaderboard, LocationControl, MissionComplete, Progress, SafetyPanel, UnlockOverlay } from '../components/game';
+import { ConsentSheet, ExitSheet, InviteButton, Leaderboard, LocationControl, MissionComplete, Progress, SafetyPanel, UnlockOverlay } from '../components/game';
 import { Avatar, Button, Icons, Pill, TabBar, useNow, useToast } from '../components/ui';
 import { GameHeader } from './GameHeader';
 
@@ -18,6 +18,7 @@ export function PlayerApp({ data, me, onLeave }: { data: GameData; me: Player; o
   const [view, setView] = useState<PlayerView | null>(null);
   const [unlock, setUnlock] = useState<{ title: string; subtitle: string } | null>(null);
   const [consentOpen, setConsentOpen] = useState(false);
+  const [exitOpen, setExitOpen] = useState(false);
   const prevIndex = useRef<number | null>(null);
   const prevStatus = useRef(game.status);
   const toast = useToast();
@@ -80,7 +81,7 @@ export function PlayerApp({ data, me, onLeave }: { data: GameData; me: Player; o
 
   return (
     <div className="min-h-full pb-28">
-      <GameHeader game={game} me={me} team={myTeam} connected={data.connected} sharingOn={me.sharing_location} />
+      <GameHeader game={game} me={me} team={myTeam} connected={data.connected} sharingOn={me.sharing_location} onExit={() => setExitOpen(true)} />
 
       {game.status === 'paused' && (
         <div className="mx-auto max-w-2xl px-4 pt-3">
@@ -114,7 +115,7 @@ export function PlayerApp({ data, me, onLeave }: { data: GameData; me: Player; o
           <div className="space-y-4">
             <LocationControl me={me} loc={data.locations[me.id]} sharing={sharing} onRequest={requestShare} />
             <SafetyPanel game={game} me={me} />
-            <Button variant="quiet" className="w-full" onClick={() => { if (confirm('Leave this game on this phone?')) onLeave(); }}>Leave game</Button>
+            <Button variant="danger" className="w-full" onClick={() => setExitOpen(true)}>Leave game</Button>
           </div>
         )}
       </main>
@@ -126,6 +127,7 @@ export function PlayerApp({ data, me, onLeave }: { data: GameData; me: Player; o
         { id: 'safety', label: 'Safety', icon: Icons.shield, badge: me.needs_help },
       ]} />
 
+      <ExitSheet open={exitOpen} onClose={() => setExitOpen(false)} game={game} me={me} onLeave={onLeave} />
       <ConsentSheet open={consentOpen} onClose={() => setConsentOpen(false)} onAccept={() => { setConsentOpen(false); sharing.enable(); }} />
       {unlock && <UnlockOverlay title={unlock.title} subtitle={unlock.subtitle} onClose={() => { setUnlock(null); setTab('mission'); }} />}
     </div>

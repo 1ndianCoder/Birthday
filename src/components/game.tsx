@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ago, clock, duration, LIVE_SECONDS, secondsSince } from '../lib/format';
 import { elapsedSeconds, type BoardRow } from '../lib/leaderboard';
-import { supabase } from '../lib/supabase';
+import { errMsg, rpc, supabase } from '../lib/supabase';
 import type { Game, Player, PlayerLocation } from '../lib/types';
 import type { LocationSharing } from '../hooks/useLocationSharing';
-import { Avatar, Button, Icons, Pill, Sheet, useNow } from './ui';
+import { Avatar, Button, Icons, Pill, Sheet, useNow, useToast } from './ui';
 
 /* ---------- Leaderboard ---------- */
 export function Leaderboard({ rows, highlightId, total, online }: { rows: BoardRow[]; highlightId?: string | null; total: number; online?: Set<string> }) {
@@ -102,6 +102,76 @@ export function ArcadeTimer({ game, isHost }: { game: Game; isHost: boolean }) {
         </div>
       )}
     </div>
+  );
+}
+
+/* ---------- Exit sheet: leave (players) or end / delete / leave (host) ---------- */
+type ExitAction = 'leave' | 'end' | 'delete';
+
+export function ExitSheet({ open, onClose, game, me, onLeave }: { open: boolean; onClose: () => void; game: Game; me: Player; onLeave: () => void }) {
+  const [armed, setArmed] = useState<ExitAction | null>(null);
+  const [busy, setBusy] = useState<ExitAction | null>(null);
+  const toast = useToast();
+  useEffect(() => { if (!open) setArmed(null); }, [open]);
+
+  const run = async (a: ExitAction) => {
+    // First tap arms the action, second tap does it.
+    if (armed !== a) { setArmed(a); return; }
+    setBusy(a);
+    try {
+      if (a === 'end') {
+        await rpc('host_set_status', { p_game: game.id, p_status: 'ended' });
+        toast('Game ended for everyone', 'ok');
+        onClose();
+      } else if (a === 'delete') {
+        const { error } = await supabase.from('games').delete().eq('id', game.id);
+        if (error) throw error;
+        onLeave();
+      } else {
+        // Players remove themselves from the game; the host keeps their seat so they can come back.
+        if (!me.is_host) {
+          const { error } = await supabase.from('players').delete().eq('id', me.id);
+          if (error) throw error;
+        }
+        onLeave();
+      }
+    } catch (e) {
+      toast(errMsg(e), 'bad');
+    } finally {
+      setBusy(null);
+      setArmed(null);
+    }
+  };
+
+  const option = (a: ExitAction, title: string, text: string, tone: 'danger' | 'ghost') => (
+    <div className="rounded-2xl border border-line bg-base/50 p-4">
+      <div className="font-bold">{title}</div>
+      <p className="mt-1 text-[13px] leading-snug text-mute">{text}</p>
+      <Button className="mt-3 w-full" variant={armed === a ? 'danger' : tone} loading={busy === a} onClick={() => run(a)}>
+        {armed === a ? 'Tap again to confirm' : title}
+      </Button>
+    </div>
+  );
+
+  return (
+    <Sheet open={open} onClose={onClose} title={me.is_host ? 'End or leave game' : 'Leave game'}>
+      <div className="space-y-3">
+        {me.is_host ? (
+          <>
+            {game.status !== 'ended' && option('end', 'End game for everyone',
+              'Stops the hunt on every phone and shows the final leaderboard. Location sharing stops for all players.', 'danger')}
+            {option('delete', 'Delete game',
+              'Removes the game, players and scores for good, and sends everyone back to the home screen.', 'danger')}
+            {option('leave', 'Leave on this phone',
+              `The game keeps running. Rejoin from this phone with code ${game.code} to get host controls back.`, 'ghost')}
+          </>
+        ) : (
+          option('leave', 'Leave game',
+            'Removes you from this game and the leaderboard. You can rejoin with the code, but your points start again.', 'danger')
+        )}
+        <Button variant="quiet" className="w-full" onClick={onClose}>Cancel</Button>
+      </div>
+    </Sheet>
   );
 }
 
@@ -266,11 +336,11 @@ export function MissionComplete({ game, rows, myRowId, total, finishedAt, comple
   return (
     <div className="space-y-4">
       <div className="glow-flare relative overflow-hidden rounded-3xl border border-flare/40 bg-gradient-to-b from-flare/15 to-transparent p-6 text-center">
-        <Confetti />
-        <div className="text-5xl" aria-hidden>🏁</div>
+        {finishedAt && <Confetti />}
+        <div className="text-5xl" aria-hidden>{finishedAt ? '🏁' : '⏱'}</div>
         <p className="display mt-2 text-[13px] font-bold text-flare">{finishedAt ? 'Final destination reached' : 'Game over'}</p>
-        <h2 className="display mt-2 text-4xl font-bold leading-[1.05]">MISSION COMPLETE!</h2>
-        <p className="mt-2 font-semibold text-mute">YOU HAVE REACHED THE FINAL DESTINATION.</p>
+        <h2 className="display mt-2 text-4xl font-bold leading-[1.05]">{finishedAt ? 'MISSION COMPLETE!' : 'GAME OVER'}</h2>
+        <p className="mt-2 font-semibold text-mute">{finishedAt ? 'YOU HAVE REACHED THE FINAL DESTINATION.' : 'The host has ended the hunt.'}</p>
         <div className="mt-6 grid grid-cols-3 gap-2">
           <Stat label="Points" value={String(mine?.points ?? 0)} />
           <Stat label="Time" value={finishedAt ? duration(elapsedSeconds(game, finishedAt)) : '—'} />
